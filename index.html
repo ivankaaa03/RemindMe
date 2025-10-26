@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RemindMe - Система управління книгами</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .auth-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .auth-section.authorized {
+        background: #d4edda;
+        border: 2px solid #28a745;
+      }
+
+      .auth-section h2 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #555;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #218838;
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c82333;
+      }
+
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+      }
+
+      .section h2 {
+        margin-bottom: 20px;
+        color: #333;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 10px;
+      }
+
+      .books-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .book-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .book-card h3 {
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .book-card p {
+        margin: 5px 0;
+        color: #666;
+      }
+
+      .book-type {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 10px;
+      }
+
+      .book-type.audiobook {
+        background: #ffeaa7;
+        color: #d63031;
+      }
+
+      .book-type.scanned {
+        background: #74b9ff;
+        color: #0984e3;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-card h3 {
+        font-size: 2em;
+        color: #667eea;
+        margin-bottom: 5px;
+      }
+
+      .stat-card p {
+        color: #666;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-icon {
+        width: 40px;
+        height: 40px;
+        background: #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .pattern-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #e9ecef;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #495057;
+        margin-left: 10px;
+      }
+
+      .log {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        margin-top: 20px;
+      }
+
+      .log-entry {
+        margin: 5px 0;
+        padding: 5px;
+        border-left: 3px solid #667eea;
+        padding-left: 10px;
+      }
+
+      .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📚 RemindMe</h1>
+        <p>Система управління книгами з породжувальними патернами</p>
+      </div>
+
+      <div class="content">
+        <!-- Секція авторизації (Singleton) -->
+        <div class="auth-section" id="authSection">
+          <h2>🔐 Авторизація <span class="pattern-badge">Singleton</span></h2>
+          <div id="loginForm">
+            <div class="form-group">
+              <label>Ім'я користувача:</label>
+              <input
+                type="text"
+                id="username"
+                placeholder="Введіть ім'я"
+                value="user123"
+              />
+            </div>
+            <div class="form-group">
+              <label>Пароль:</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Введіть пароль"
+                value="password123"
+              />
+            </div>
+            <button class="btn btn-primary" onclick="login()">Увійти</button>
+          </div>
+          <div id="userInfo" style="display: none">
+            <div class="user-info">
+              <div class="user-icon" id="userIcon"></div>
+              <div>
+                <strong id="currentUser"></strong>
+                <p style="margin: 0; font-size: 14px; color: #666">
+                  Авторизовано
+                </p>
+              </div>
+              <button
+                class="btn btn-danger"
+                onclick="logout()"
+                style="margin-left: auto"
+              >
+                Вийти
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Секція додавання книг (Factory Method + Builder) -->
+        <div class="section disabled" id="addBookSection">
+          <h2>
+            ➕ Додати книгу <span class="pattern-badge">Factory Method</span>
+            <span class="pattern-badge">Builder</span>
+          </h2>
+          <div class="form-group">
+            <label>Тип книги:</label>
+            <select id="bookType">
+              <option value="audiobook">Аудіокнига</option>
+              <option value="scanned">Сканована книга</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Назва:</label>
+            <input
+              type="text"
+              id="bookTitle"
+              placeholder="Введіть назву книги"
+            />
+          </div>
+          <div class="form-group">
+            <label>Автор:</label>
+            <input type="text" id="bookAuthor" placeholder="Введіть автора" />
+          </div>
+          <div class="form-group">
+            <label>Видавництво:</label>
+            <input
+              type="text"
+              id="bookPublisher"
+              placeholder="Введіть видавництво"
+            />
+          </div>
+          <button class="btn btn-success" onclick="addBook()">
+            Додати книгу
+          </button>
+        </div>
+
+        <!-- Бібліотека книг (Database Singleton) -->
+        <div class="section disabled" id="librarySection">
+          <h2>
+            📖 Моя бібліотека
+            <span class="pattern-badge">Singleton Database</span>
+          </h2>
+          <div class="books-grid" id="booksGrid">
+            <p style="text-align: center; color: #999">
+              Книг ще немає. Додайте першу!
+            </p>
+          </div>
+        </div>
+
+        <!-- Статистика (ProgressService Singleton) -->
+        <div class="section disabled" id="statsSection">
+          <h2>
+            📊 Статистика
+            <span class="pattern-badge">Singleton ProgressService</span>
+          </h2>
+          <div class="stats">
+            <div class="stat-card">
+              <h3 id="totalBooks">0</h3>
+              <p>Всього книг</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="avgProgress">0%</h3>
+              <p>Середній прогрес</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="audiobookCount">0</h3>
+              <p>Аудіокниг</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="scannedCount">0</h3>
+              <p>Сканованих книг</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Лог подій -->
+        <div class="section">
+          <h2>📝 Лог подій системи</h2>
+          <div class="log" id="logContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ============= Патерн Singleton: Authorization =============
+      class Authorization {
+        constructor() {
+          if (Authorization.instance) {
+            return Authorization.instance;
+          }
+          Authorization.instance = this;
+          this.currentUser = null;
+          this.isAuthorized = false;
+          this.log("🔐 Сервіс авторизації ініціалізовано");
+        }
+
+        static getInstance() {
+          if (!Authorization.instance) {
+            Authorization.instance = new Authorization();
+          }
+          return Authorization.instance;
+        }
+
+        login(username, password) {
+          if (password === "password123") {
+            this.currentUser = username;
+            this.isAuthorized = true;
+            this.log(`✓ Користувач ${username} авторизований`);
+            return true;
+          }
+          this.log("✗ Помилка авторизації");
+          return false;
+        }
+
+        logout() {
+          const user = this.currentUser;
+          this.currentUser = null;
+          this.isAuthorized = false;
+          this.log(`✓ Користувач ${user} вийшов з системи`);
+        }
+
+        checkAuthorization() {
+          return this.isAuthorized;
+        }
+
+        getCurrentUser() {
+          return this.currentUser;
+        }
+
+        log(message) {
+          const logContainer = document.getElementById("logContainer");
+          const entry = document.createElement("div");
+          entry.className = "log-entry";
+          entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+          logContainer.appendChild(entry);
+          logContainer.scrollTop = logContainer.scrollHeight;
+        }
+      }
+
+      // ============= Патерн Singleton: Database =============
+      class Database {
+        constructor() {
+          if (Database.instance) {
+            return Database.instance;
+          }
+          Database.instance = this;
+          this.books = new Map();
+          this.auth = Authorization.getInstance();
+          this.auth.log("📚 База даних ініціалізована");
+        }
+
+        static getInstance() {
+          if (!Database.instance) {
+            Database.instance = new Database();
+          }
+          return Database.instance;
+        }
+
+        addBook(book) {
+          this.books.set(book.id, book);
+          this.auth.log(`✓ Книга додана до БД: ${book.title}`);
+        }
+
+        getBook(id) {
+          return this.books.get(id);
+        }
+
+        getAllBooks() {
+          return Array.from(this.books.values());
+        }
+
+        getBookCount() {
+          return this.books.size;
+        }
+      }
+
+      // ============= Патерн Singleton: ProgressService =============
+      class ProgressService {
+        constructor() {
+          if (ProgressService.instance) {
+            return ProgressService.instance;
+          }
+          ProgressService.instance = this;
+          this.progress = new Map();
+          this.auth = Authorization.getInstance();
+          this.auth.log("📊 Сервіс прогресу ініціалізовано");
+        }
+
+        static getInstance() {
+          if (!ProgressService.instance) {
+            ProgressService.instance = new ProgressService();
+          }
+          return ProgressService.instance;
+        }
+
+        updateProgress(bookId, value) {
+          this.progress.set(bookId, value);
+          this.auth.log(`📖 Прогрес оновлено для книги ${bookId}: ${value}%`);
+        }
+
+        getProgress(bookId) {
+          return this.progress.get(bookId) || 0;
+        }
+
+        getAverageProgress() {
+          if (this.progress.size === 0) return 0;
+          const sum = Array.from(this.progress.values()).reduce(
+            (a, b) => a + b,
+            0
+          );
+          return Math.round(sum / this.progress.size);
+        }
+      }
+
+      // ============= Патерн Builder: Book =============
+      class Book {
+        constructor() {
+          this.id = "";
+          this.title = "";
+          this.author = "";
+          this.publisher = "";
+          this.isbn = "";
+          this.year = 0;
+          this.description = "";
+          this.type = "";
+        }
+      }
+
+      class BookBuilder {
+        constructor() {
+          this.book = new Book();
+        }
+
+        setId(id) {
+          this.book.id = id;
+          return this;
+        }
+
+        setTitle(title) {
+          this.book.title = title;
+          return this;
+        }
+
+        setAuthor(author) {
+          this.book.author = author;
+          return this;
+        }
+
+        setPublisher(publisher) {
+          this.book.publisher = publisher;
+          return this;
+        }
+
+        setIsbn(isbn) {
+          this.book.isbn = isbn;
+          return this;
+        }
+
+        setYear(year) {
+          this.book.year = year;
+          return this;
+        }
+
+        setDescription(desc) {
+          this.book.description = desc;
+          return this;
+        }
+
+        setType(type) {
+          this.book.type = type;
+          return this;
+        }
+
+        build() {
+          return this.book;
+        }
+      }
+
+      class AudiobookBuilder extends BookBuilder {
+        constructor() {
+          super();
+          this.narrator = "";
+          this.duration = 0;
+        }
+
+        setNarrator(narrator) {
+          this.narrator = narrator;
+          return this;
+        }
+
+        setDuration(minutes) {
+          this.duration = minutes;
+          return this;
+        }
+
+        build() {
+          this.book.description += ` [Аудіокнига, диктор: ${this.narrator}, тривалість: ${this.duration} хв]`;
+          this.book.type = "audiobook";
+          return this.book;
+        }
+      }
+
+      class ScannedBookBuilder extends BookBuilder {
+        constructor() {
+          super();
+          this.pageCount = 0;
+          this.ocrQuality = "";
+        }
+
+        setPageCount(pages) {
+          this.pageCount = pages;
+          return this;
+        }
+
+        setOcrQuality(quality) {
+          this.ocrQuality = quality;
+          return this;
+        }
+
+        build() {
+          this.book.description += ` [Сканована книга, сторінок: ${this.pageCount}, якість OCR: ${this.ocrQuality}]`;
+          this.book.type = "scanned";
+          return this.book;
+        }
+      }
+
+      // ============= Патерн Factory Method =============
+      class BookCreator {
+        createBook(id, title, author, publisher) {
+          throw new Error("Метод має бути реалізований");
+        }
+      }
+
+      class AudiobookCreator extends BookCreator {
+        createBook(id, title, author, publisher) {
+          const builder = new AudiobookBuilder();
+          return builder
+            .setId(id)
+            .setTitle(title)
+            .setAuthor(author)
+            .setPublisher(publisher)
+            .setDescription("Професійно озвучена аудіокнига")
+            .setNarrator("Професійний диктор")
+            .setDuration(180)
+            .setYear(new Date().getFullYear())
+            .build();
+        }
+      }
+
+      class ScannedBookCreator extends BookCreator {
+        createBook(id, title, author, publisher) {
+          const builder = new ScannedBookBuilder();
+          return builder
+            .setId(id)
+            .setTitle(title)
+            .setAuthor(author)
+            .setPublisher(publisher)
+            .setDescription("Цифрова копія друкованого видання")
+            .setPageCount(250)
+            .setOcrQuality("висока")
+            .setYear(new Date().getFullYear())
+            .build();
+        }
+      }
+
+      // ============= BookService =============
+      class BookService {
+        constructor() {
+          this.db = Database.getInstance();
+          this.progress = ProgressService.getInstance();
+          this.auth = Authorization.getInstance();
+        }
+
+        addBook(type, title, author, publisher) {
+          if (!this.auth.checkAuthorization()) {
+            alert("Потрібна авторизація!");
+            return null;
+          }
+
+          const id = "BOOK_" + Date.now();
+          let creator;
+
+          if (type === "audiobook") {
+            creator = new AudiobookCreator();
+          } else if (type === "scanned") {
+            creator = new ScannedBookCreator();
+          }
+
+          const book = creator.createBook(id, title, author, publisher);
+          this.db.addBook(book);
+          this.progress.updateProgress(id, Math.floor(Math.random() * 100));
+
+          return book;
+        }
+      }
+
+      // ============= UI Functions =============
+      const auth = Authorization.getInstance();
+      const bookService = new BookService();
+
+      function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (auth.login(username, password)) {
+          document.getElementById("loginForm").style.display = "none";
+          document.getElementById("userInfo").style.display = "block";
+          document.getElementById("currentUser").textContent = username;
+          document.getElementById("userIcon").textContent = username
+            .charAt(0)
+            .toUpperCase();
+          document.getElementById("authSection").classList.add("authorized");
+
+          document
+            .getElementById("addBookSection")
+            .classList.remove("disabled");
+          document
+            .getElementById("librarySection")
+            .classList.remove("disabled");
+          document.getElementById("statsSection").classList.remove("disabled");
+        } else {
+          alert("Невірний пароль! Використайте: password123");
+        }
+      }
+
+      function logout() {
+        auth.logout();
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("userInfo").style.display = "none";
+        document.getElementById("authSection").classList.remove("authorized");
+
+        document.getElementById("addBookSection").classList.add("disabled");
+        document.getElementById("librarySection").classList.add("disabled");
+        document.getElementById("statsSection").classList.add("disabled");
+      }
+
+      function addBook() {
+        const type = document.getElementById("bookType").value;
+        const title = document.getElementById("bookTitle").value;
+        const author = document.getElementById("bookAuthor").value;
+        const publisher = document.getElementById("bookPublisher").value;
+
+        if (!title || !author) {
+          alert("Заповніть назву та автора!");
+          return;
+        }
+
+        bookService.addBook(type, title, author, publisher || "Невідомо");
+
+        document.getElementById("bookTitle").value = "";
+        document.getElementById("bookAuthor").value = "";
+        document.getElementById("bookPublisher").value = "";
+
+        renderLibrary();
+        updateStatistics();
+      }
+
+      function renderLibrary() {
+        const db = Database.getInstance();
+        const progress = ProgressService.getInstance();
+        const books = db.getAllBooks();
+        const grid = document.getElementById("booksGrid");
+
+        if (books.length === 0) {
+          grid.innerHTML =
+            '<p style="text-align: center; color: #999;">Книг ще немає. Додайте першу!</p>';
+          return;
+        }
+
+        grid.innerHTML = books
+          .map((book) => {
+            const prog = progress.getProgress(book.id);
+            return `
+                    <div class="book-card">
+                        <h3>${book.title}</h3>
+                        <p><strong>Автор:</strong> ${book.author}</p>
+                        <p><strong>Видавництво:</strong> ${book.publisher}</p>
+                        <p style="font-size: 14px; color: #999;">${
+                          book.description
+                        }</p>
+                        <span class="book-type ${book.type}">${
+              book.type === "audiobook" ? "🎧 Аудіокнига" : "📄 Сканована"
+            }</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${prog}%">${prog}%</div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 10px; width: 100%;" 
+                                onclick="updateBookProgress('${
+                                  book.id
+                                }')">Оновити прогрес</button>
+                    </div>
+                `;
+          })
+          .join("");
+      }
+
+      function updateBookProgress(bookId) {
+        const newProgress = Math.floor(Math.random() * 100);
+        const progress = ProgressService.getInstance();
+        progress.updateProgress(bookId, newProgress);
+        renderLibrary();
+        updateStatistics();
+      }
+
+      function updateStatistics() {
+        const db = Database.getInstance();
+        const progress = ProgressService.getInstance();
+        const books = db.getAllBooks();
+
+        document.getElementById("totalBooks").textContent = books.length;
+        document.getElementById("avgProgress").textContent =
+          progress.getAverageProgress() + "%";
+
+        const audioCount = books.filter((b) => b.type === "audiobook").length;
+        const scannedCount = books.filter((b) => b.type === "scanned").length;
+
+        document.getElementById("audiobookCount").textContent = audioCount;
+        document.getElementById("scannedCount").textContent = scannedCount;
+      }
+
+      // Додамо приклади книг при завантаженні
+      window.addEventListener("load", () => {
+        auth.log("🚀 Система RemindMe запущена");
+        auth.log("📖 Демонстрація породжувальних патернів:");
+        auth.log("   • Factory Method - створення різних типів книг");
+        auth.log("   • Builder - покрокове створення складних об'єктів Book");
+        auth.log("   • Singleton - Database, ProgressService, Authorization");
+      });
+    </script>
+  </body>
+</html>
